@@ -30,26 +30,46 @@ async function run() {
     const coffeeCollections = client.db("coffee_store").collection("coffee");
 
 
-    app.get('/coffee', async(req, res)=>{
+    app.get('/coffee', async (req, res) => {
       const result = await coffeeCollections.find().toArray()
       res.send(result)
     })
-    app.get('/coffee/:id', async(req, res)=>{
+
+    app.get('/coffee/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await coffeeCollections.findOne(query);
       res.send(result)
     })
 
-    app.post('/coffee', async(req, res)=>{
-        const data = req.body;
-        const result = await coffeeCollections.insertOne(data);
-        res.send(result)
+    app.post('/coffee', async (req, res) => {
+      const data = req.body;
+      const result = await coffeeCollections.insertOne(data);
+      res.send(result)
     })
 
-    app.delete('/coffee/:id', async(req, res)=>{
+    app.patch("/coffee_update/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const coffeeInfoFromClient = req.body;
+      const query = { _id: new ObjectId(id) }
+      
+      const doc = {
+        name: coffeeInfoFromClient.name,
+        chef:  coffeeInfoFromClient.chef,
+        supplier: coffeeInfoFromClient.supplier,
+        details: coffeeInfoFromClient.details,
+        teste: coffeeInfoFromClient.teste,
+        category: coffeeInfoFromClient.category,
+        photo_url: coffeeInfoFromClient.photo_url,
+        price: coffeeInfoFromClient.price
+      }
+      const UpdateDoc = await coffeeCollections.updateOne(query, doc)
+      res.send(UpdateDoc)
+    })
+
+    app.delete('/coffee/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
       const result = await coffeeCollections.deleteOne(query)
       res.send(result)
     })
@@ -61,7 +81,7 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-   
+
   }
 }
 run().catch(console.dir);
