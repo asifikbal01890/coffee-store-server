@@ -28,6 +28,7 @@ async function run() {
 
 
     const coffeeCollections = client.db("coffee_store").collection("coffee");
+    const usersCollections = client.db("coffee_store").collection("users");
 
 
     app.get('/coffee', async (req, res) => {
@@ -48,20 +49,46 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/users', async(req, res)=>{
+      const result = await usersCollections.find().toArray()
+      res.send(result)
+    })
+
+    app.post('/users', async (req, res) => {
+      const data = req.body;
+      const result = await usersCollections.insertOne(data);
+      res.send(result)
+    })
+
+    app.patch('/users', async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const query = { email: user.email }
+      const update = {
+        $set: {
+          lastSignInTime: user.lastSignInTime
+        }
+      }
+      const result = await usersCollections.updateOne(query, update)
+      res.send(result)
+    })
+
     app.patch("/coffee_update/:id", async (req, res) => {
       const id = req.params.id;
       const coffeeInfoFromClient = req.body;
       const query = { _id: new ObjectId(id) }
-      
+
       const doc = {
-        name: coffeeInfoFromClient.name,
-        chef:  coffeeInfoFromClient.chef,
-        supplier: coffeeInfoFromClient.supplier,
-        details: coffeeInfoFromClient.details,
-        teste: coffeeInfoFromClient.teste,
-        category: coffeeInfoFromClient.category,
-        photo_url: coffeeInfoFromClient.photo_url,
-        price: coffeeInfoFromClient.price
+        $set: {
+          name: coffeeInfoFromClient.name,
+          chef: coffeeInfoFromClient.chef,
+          supplier: coffeeInfoFromClient.supplier,
+          details: coffeeInfoFromClient.details,
+          teste: coffeeInfoFromClient.teste,
+          category: coffeeInfoFromClient.category,
+          photo_url: coffeeInfoFromClient.photo_url,
+          price: coffeeInfoFromClient.price
+        }
       }
       const UpdateDoc = await coffeeCollections.updateOne(query, doc)
       res.send(UpdateDoc)
